@@ -1,0 +1,122 @@
+DROP TABLE IF EXISTS CAFFE_BAR CASCADE;
+DROP TABLE IF EXISTS ZAPOSLENIK CASCADE;
+DROP TABLE IF EXISTS POVIJEST_PLACE CASCADE;
+DROP TABLE IF EXISTS KUPAC CASCADE;
+DROP TABLE IF EXISTS NARUDZBA CASCADE;
+DROP TABLE IF EXISTS RACUN CASCADE;
+DROP TABLE IF EXISTS STAVKA CASCADE;
+DROP TABLE IF EXISTS PROIZVOD CASCADE;
+DROP TABLE IF EXISTS KATEGORIJA CASCADE;
+DROP TABLE IF EXISTS DOBAVLJAC CASCADE;
+DROP TABLE IF EXISTS DOBAVLJANJE_PROIZVODA CASCADE;
+DROP TABLE IF EXISTS DODATNI_MATERIJALI CASCADE;
+
+CREATE TABLE CAFFE_BAR (
+    caffe_id INTEGER PRIMARY KEY,
+    ime VARCHAR(50) NOT NULL,
+    adresa VARCHAR(100) NOT NULL,
+    grad VARCHAR(50) NOT NULL,
+    drzava VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE ZAPOSLENIK (
+    zaposlenik_id INTEGER PRIMARY KEY,
+    ime VARCHAR(50) NOT NULL,
+    prezime VARCHAR(50) NOT NULL,
+    datum_zaposljavanja DATE NOT NULL,
+    kontakt VARCHAR(50) NOT NULL,
+    pozicija VARCHAR(50) NOT NULL,
+    tip_zaposlenika VARCHAR(50) NOT NULL,
+    caffe_id INTEGER NOT NULL CONSTRAINT caffe_id_fk REFERENCES CAFFE_BAR(caffe_id)
+);
+
+CREATE TABLE POVIJEST_PLACE (
+    zaposlenik_id INTEGER NOT NULL CONSTRAINT zaposlenik_id_fk REFERENCES ZAPOSLENIK(zaposlenik_id),
+    datum DATE NOT NULL,
+    iznos DECIMAL(10, 2) NOT NULL,
+    broj_sati INTEGER NOT NULL,
+    PRIMARY KEY (zaposlenik_id, datum)
+);
+
+CREATE TABLE KUPAC (
+    kupac_id INTEGER PRIMARY KEY,
+    kontakt VARCHAR(50),
+    adresa VARCHAR(100),
+    email VARCHAR(100)
+);
+
+CREATE TABLE RACUN (
+    racun_id INTEGER PRIMARY KEY,
+    naziv_caffe_bara VARCHAR(50) NOT NULL,
+    adresa VARCHAR(100) NOT NULL,
+    datum DATE NOT NULL,
+    vrijeme TIME NOT NULL,
+    ime_blagajnika VARCHAR(50) NOT NULL,
+    kolicina INTEGER NOT NULL,
+    cijena DECIMAL(10, 2) NOT NULL,
+    ukupan_iznos DECIMAL(10, 2) NOT NULL,
+    nacin_placanja VARCHAR(50) NOT NULL,
+    porez DECIMAL(5, 2) NOT NULL,
+    postotak DECIMAL(5, 2) NOT NULL,
+    osnovica_poreza DECIMAL(10, 2) NOT NULL,
+    iznos_poreza DECIMAL(10, 2) NOT NULL,
+    jir VARCHAR(50) NOT NULL,
+    zki VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE NARUDZBA (
+    narudzba_id INTEGER PRIMARY KEY,
+    datum DATE NOT NULL,
+    kupac_id INTEGER NOT NULL CONSTRAINT kupac_id_fk REFERENCES KUPAC(kupac_id),
+    zaposlenik_id INTEGER NOT NULL CONSTRAINT zaposlenik_id_fk REFERENCES ZAPOSLENIK(zaposlenik_id),
+    racun_id INTEGER NOT NULL CONSTRAINT racun_id_fk REFERENCES RACUN(racun_id),
+    UNIQUE (racun_id)
+);
+
+CREATE TABLE DOBAVLJAC (
+    dobavljac_id INTEGER PRIMARY KEY,
+    naziv_tvrtke VARCHAR(50) NOT NULL,
+    adresa VARCHAR(100) NOT NULL,
+    drzava VARCHAR(50) NOT NULL,
+    kontakt VARCHAR(50) NOT NULL
+);
+
+CREATE TABLE KATEGORIJA (
+    kategorija_id INTEGER PRIMARY KEY,
+    naziv VARCHAR(50) NOT NULL,
+    opis TEXT
+); 
+
+CREATE TABLE PROIZVOD (
+    proizvod_id INTEGER PRIMARY KEY,
+    naziv VARCHAR(100) NOT NULL,
+    cijena DECIMAL(10, 2) NOT NULL,
+    opis TEXT,
+    dobavljac_id INTEGER NOT NULL CONSTRAINT dobavljac_id_fk REFERENCES DOBAVLJAC(dobavljac_id),
+    kategorija_id INTEGER NOT NULL CONSTRAINT kategorija_id_fk REFERENCES KATEGORIJA(kategorija_id)
+);
+
+CREATE TABLE STAVKA (
+    narudzba_id INTEGER NOT NULL CONSTRAINT narudzba_id_fk REFERENCES NARUDZBA(narudzba_id),
+    proizvod_id INTEGER NOT NULL CONSTRAINT proizvod_id_fk REFERENCES PROIZVOD(proizvod_id),
+    kolicina INTEGER NOT NULL,
+    PRIMARY KEY (narudzba_id, proizvod_id)
+);
+
+CREATE TABLE DOBAVLJANJE_PROIZVODA (
+    dobavljanje_id INTEGER PRIMARY KEY,
+    kolicina INTEGER NOT NULL,
+    narudzbena_cijena DECIMAL(10, 2) NOT NULL,
+    proizvodac VARCHAR(50) NOT NULL,
+    datum DATE NOT NULL,
+    proizvod_id INTEGER NOT NULL CONSTRAINT proizvod_id_fk REFERENCES PROIZVOD(proizvod_id),
+    dobavljac_id INTEGER NOT NULL CONSTRAINT dobavljac_id_fk REFERENCES DOBAVLJAC(dobavljac_id)
+);
+
+CREATE TABLE DODATNI_MATERIJALI (
+    dodatni_id INTEGER PRIMARY KEY,
+    naziv VARCHAR(50) NOT NULL,
+    cijena DECIMAL(10, 2) NOT NULL,
+    opis TEXT,
+    dobavljac_id INTEGER NOT NULL CONSTRAINT dobavljac_id_fk REFERENCES DOBAVLJAC(dobavljac_id)
+);
